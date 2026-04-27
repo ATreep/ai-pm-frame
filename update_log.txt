@@ -1,0 +1,3 @@
+2026.4.27 17:00:23 - v260427 - ATreep
+Initial project setup with debate and init-pm skills, plugin metadata, and CLAUDE.md.
+

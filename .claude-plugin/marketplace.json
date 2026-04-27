@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ai-pm-frame",
+  "owner": {
+    "name": "ATreep"
+  },
+  "plugins": [
+    {
+      "name": "ai-pm-frame",
+      "source": "./",
+      "description": "An AI-driven Product Manager for Claude Code that transforms news, feedback, and research into actionable PRDs and guidelines through multi-agent stakeholder debates.",
+      "version": "v260427",
+      "author": {
+        "name": "ATreep"
+      }
+    }
+  ]
+}
