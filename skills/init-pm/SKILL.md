@@ -5,35 +5,92 @@ Initialize an AI Product Manager (AI-PM) workspace for a specific product. This 
 
 ## Prerequisites
 
-**STOP** if the user has not provided product materials. You cannot proceed without them.
+**STOP** if the user has not provided product materials and the workspace has no source code to analyze. You need at least one input source.
 
-Required materials (at least one):
+Two input modes are supported. Use whichever is available, or combine both.
+
+### Mode A — Document Input
+
+The user provides external materials directly. At least one of:
 - Product Requirement Document (PRD)
 - Product advertisements or marketing copy
 - Official website content / product docs
 - User stories / feature specs
 - Competitive analysis docs
 
+### Mode B — Source Code Analysis
+
+The user points to an existing codebase (or runs `/init-pm` inside one). Claude reads the project source to infer product context. Useful when no formal docs exist yet.
+
+Required signals (at least one must be present):
+- `README.md` or equivalent project documentation
+- `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, or other manifest with a project description
+- A recognizable source tree (`src/`, `app/`, `lib/`, etc.) with meaningful code
+- Config files that reveal product intent (routes, schemas, feature flags, i18n)
+
+### Combined Mode
+
+When both documents and source code are available, use documents as the primary source and source code to fill gaps, validate claims, and surface undocumented features or constraints.
+
 ## Steps
 
 ### 1. Validate Input
 
-If no product materials were provided, respond:
+Determine which input mode applies:
+
+**If the user provided documents** — proceed with Mode A.
+
+**If no documents were provided but a source tree exists** — proceed with Mode B. Scan the workspace for:
+1. `README.md` or similar documentation files
+2. Manifest files (`package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, etc.)
+3. Source directory structure (`src/`, `app/`, `lib/`)
+4. Route definitions, schema files, API endpoints, feature flags, config files
+
+**If neither documents nor usable source code exist**, respond:
 
 ```
-I need product materials to create an AI-PM role. Please provide at least one of:
+I need product context to create an AI-PM role. Please provide at least one of:
+
+Documents:
 - PRD (Product Requirement Document)
 - Ads / marketing copy
 - Official website or product documentation
 - User stories or feature specifications
 - Competitive analysis
+
+Or point me to an existing codebase with:
+- A README or project docs
+- A manifest file (package.json, Cargo.toml, pyproject.toml, go.mod, etc.)
+- A recognizable source tree
 ```
 
 Then **STOP** and wait for the user.
 
 ### 2. Create Product Manager Role Skill
 
+#### Mode A — From Documents
+
 Read all provided materials, then generate a comprehensive `pm-role.md` in the **current workspace root**.
+
+#### Mode B — From Source Code
+
+Analyze the project source to extract product context:
+
+1. **Read documentation files** — `README.md`, `CHANGELOG.md`, `docs/`, `CONTRIBUTING.md`
+2. **Read manifest files** — extract name, description, dependencies, scripts
+3. **Scan directory structure** — infer features from folder names, module organization, route files
+4. **Read key source files** — look for API routes, schema definitions, feature modules, i18n keys, config constants
+5. **Inspect test files** — test names and structure reveal intended user flows and feature boundaries
+
+From this analysis, infer:
+- What the product does and who it serves
+- Core features and their priority (based on code complexity, test coverage, dependency weight)
+- Technical constraints (framework, language, deployment targets)
+- Business model signals (auth flows, payment modules, admin panels, analytics integrations)
+
+#### Both Modes
+
+Generate the same `pm-role.md` output regardless of input mode. When source code is the only input, note in the role file that the PM persona is code-inferred and may benefit from refinement once formal docs exist.
 
 The role skill must include:
 - **Product vision** — 1-2 sentence summary of what the product is and who it serves
@@ -86,7 +143,29 @@ chmod +x claude-pm.sh
 #### `debate-materials/` folder
 Create an empty directory named `debate-materials`.
 
-### 4. Teach the User
+### 4. Install Debate Skill (Project-Local)
+
+The `debate` skill must be installed as a **project-local skill**, not at the user level (`~/.claude/`).
+
+1. Read the debate skill template from the plugin assets:
+   ```
+   assets/debate/SKILL.md
+   ```
+   (This file is relative to the plugin root directory.)
+
+2. Write the content to the project's local skills directory:
+   ```
+   .claude/skills/debate/SKILL.md
+   ```
+
+3. Create the directory structure if it does not exist:
+   ```bash
+   mkdir -p .claude/skills/debate
+   ```
+
+**Do NOT** copy the debate skill to `~/.claude/skills/` or any other user-level location. It belongs exclusively in the project scope so it can be version-controlled and customized per product.
+
+### 5. Teach the User
 
 After setup is complete, output exactly:
 
@@ -104,6 +183,8 @@ Before starting a debate:
 1. Copy any debate materials (research docs, competitor briefs, user interview notes, etc.) into the `debate-materials/` folder.
 2. Start a debate session with the `/debate` command.
 
+The `/debate` skill is installed as a project-local skill at `.claude/skills/debate/SKILL.md`. It will not appear in your global `~/.claude/` folder.
+
 Example workflow:
 ```bash
 # 1. Start the AI-PM shell
@@ -118,13 +199,16 @@ Example workflow:
 ## When NOT to Use
 
 - Do not use if the user only wants a generic PM role without product context.
-- Do not use if the user has not provided any product materials.
+- Do not use if neither documents nor a meaningful source codebase are available.
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Proceeding without product materials | Stop and ask the user for PRD, ads, docs, or website |
-| Writing a generic PM role | Derive specifics from the provided materials; every section should reference the actual product |
+| Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
+| Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
+| Ignoring source code when docs are thin | Use Mode B to fill gaps from the codebase — routes, schemas, and tests reveal real product intent |
+| Taking source-inferred features at face value | Cross-check: dead code, prototypes, and abandoned features exist. Prioritize signals with tests and active usage |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
 | Putting files in the wrong directory | All files (`pm-role.md`, `.claude/settings.json`, `claude-pm.sh`, `debate-materials/`) go in the workspace root |
+| Installing debate skill at user level | The debate skill goes to `.claude/skills/debate/SKILL.md` in the project root, **never** to `~/.claude/skills/` |
