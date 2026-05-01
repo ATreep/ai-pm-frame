@@ -90,14 +90,19 @@ From this analysis, infer:
 - Technical constraints (framework, language, deployment targets)
 - Business model signals (auth flows, payment modules, admin panels, analytics integrations)
 - **System architecture** — module boundaries, data flow between components, integration points, layering (controller/service/repository, etc.)
+- **Module dependency graph** — which modules import/depend on which, what would break if a module changes
+- **Infrastructure details** — Dockerfiles, docker-compose, Kubernetes manifests, Terraform/Pulumi configs, CI/CD pipelines (.github/workflows, Jenkinsfile, etc.), environment variable patterns
+- **Data architecture** — database schemas, migration files, ORM models, cache configurations, message queue definitions
 - **Technical debt signals** — TODO/FIXME comments, deprecated dependencies, skipped tests, inconsistent patterns
-- **Operational characteristics** — deployment config, environment handling, logging, monitoring hooks, error boundaries
+- **Operational characteristics** — deployment config, environment handling, logging, monitoring hooks, error boundaries, health check endpoints
 
 #### Both Modes
 
 Generate the same `pm-role.md` output regardless of input mode. When source code is the only input, note in the role file that the PM persona is code-inferred and may benefit from refinement once formal docs exist.
 
-The PM must be both a **domain expert** (understands the product, users, and market) and a **technically informed PM** (understands the system architecture, knows where the bodies are buried in the code, and can have credible conversations with engineering about trade-offs). A PM who only knows the business side will make promises the system can't deliver; a PM who only knows the tech will miss what users actually need. The role file should produce a PM who bridges both worlds.
+The PM must be both a **domain expert** (understands the product, users, and market) and a **technically informed PM** (understands the system architecture, knows where the bodies are buried in the code, and can have credible conversations with engineering about trade-offs). A PM who only knows the business side will make promises the system can't deliver; a PM who only knows the tech will miss what users actually needs. The role file should produce a PM who bridges both worlds.
+
+**Infrastructure-First Architecture Knowledge**: The PM role must include deep infrastructure understanding — not just "what the product does" but "how the system is built." The PM should be able to describe the complete module architecture: every major module, its responsibility, how modules communicate, data flow paths, and infrastructure dependencies. This is critical for making realistic promises, estimating effort, and identifying risks. A PM who doesn't understand the infrastructure will greenlight features that require rewriting core modules or miss that a "simple" change touches 5 services.
 
 The role skill must include:
 
@@ -109,13 +114,48 @@ The role skill must include:
 - **Competitive landscape** — key differentiators, market positioning
 - **Constraints & risks** — technical, legal, timeline, budget
 
-#### Architecture & System Knowledge
-- **System architecture overview** — how the product is structured at a high level (monolith, microservices, serverless, etc.), key layers and their responsibilities
-- **Core modules & boundaries** — each major module/component, what it owns, how it communicates with others (APIs, events, shared state)
-- **Data model & flow** — primary entities, relationships, how data moves through the system (ingress → processing → storage → egress)
-- **Integration surface** — external services, third-party APIs, auth providers, payment systems, analytics
-- **Tech stack & constraints** — languages, frameworks, databases, infrastructure; what choices are locked in vs. flexible
-- **Known technical debt** — areas of the codebase that are fragile, over-complex, or due for refactor; the PM should know these to avoid promising work that hits hidden walls
+#### Architecture & System Knowledge (Infrastructure-First)
+
+**System Architecture Overview**
+- How the product is structured (monolith, microservices, serverless, modular monolith, etc.)
+- Key layers and their responsibilities (presentation, API, business logic, data access, infrastructure)
+- Deployment topology — where things run, how they're scaled, what manages them
+- Infrastructure providers and services (cloud platform, CDN, container orchestration, serverless functions)
+
+**Module Architecture Map** (the PM must know every major module)
+- Each major module/component, its name, purpose, and ownership boundary
+- Module communication patterns — REST APIs, gRPC, message queues, event buses, shared databases, direct imports
+- Module dependency graph — which modules depend on which, what breaks if a module changes
+- Module maturity signals — which modules are stable vs. actively developed vs. legacy
+
+**Data Architecture**
+- Primary entities and their relationships (the PM should sketch the ERD from memory)
+- Data flow paths — ingress → validation → processing → storage → egress
+- Database technologies used and why (relational vs. document vs. time-series vs. cache)
+- Data ownership — which module owns which tables/collections, cross-module data access patterns
+- Caching strategy — what's cached, where, invalidation approach
+
+**Infrastructure & DevOps**
+- CI/CD pipeline — how code gets from commit to production
+- Environment topology — dev, staging, production; how they differ
+- Monitoring & observability — logging, metrics, tracing, alerting stack
+- Scaling strategy — horizontal vs. vertical, auto-scaling triggers, load balancing
+- Disaster recovery — backup strategy, failover, RTO/RPO targets
+
+**Integration Surface**
+- External services, third-party APIs, auth providers, payment systems, analytics
+- Integration reliability — which integrations are critical path, which have fallbacks
+- API contracts — internal vs. external APIs, versioning strategy, breaking change policy
+
+**Tech Stack & Constraints**
+- Languages, frameworks, databases, infrastructure; what choices are locked in vs. flexible
+- Performance budgets and constraints (latency targets, throughput requirements, resource limits)
+- Compliance constraints (data residency, privacy regulations, security certifications)
+
+**Known Technical Debt**
+- Areas of the codebase that are fragile, over-complex, or due for refactor
+- The PM should know these to avoid promising work that hits hidden walls
+- Debt impact assessment — which debt blocks new features vs. which is just annoying
 
 #### Project Management Framework
 - **Scope management principles** — how this PM defines and defends scope; when to cut, when to expand; how to handle scope creep from stakeholders
@@ -133,7 +173,7 @@ The role skill must include:
 Structure as a system-prompt-ready role file:
 - Start with `# AI Product Manager — <Product Name>`
 - Use imperative, persona-driven language ("You are a PM who...")
-- Keep under 800 lines, 400-600 typical
+- **Minimum 400 lines, target 500-700 lines** — the PM role must be comprehensive enough to describe the full module architecture, not just a product summary
 - Use frontmatter:
   ```yaml
   ---
@@ -256,6 +296,8 @@ Example workflow:
 | Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
 | Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
 | Generating a PM that only knows the business side | The PM must include architecture knowledge, module boundaries, and technical constraints — not just product vision and features |
+| Writing a PM role that's too short | The PM role must be 400+ lines with detailed module architecture, infrastructure knowledge, and PM methodology — a 200-line PM will lack the depth to make real decisions |
+| Missing infrastructure details | Include deployment topology, CI/CD pipeline, monitoring stack, scaling strategy, and environment details — the PM needs to understand how the system actually runs |
 | Skipping PM methodology in the role file | Include scope management, prioritization framework, risk management, and stakeholder management principles — these make the PM credible and consistent |
 | Ignoring source code when docs are thin | Use Mode B to fill gaps from the codebase — routes, schemas, and tests reveal real product intent |
 | Taking source-inferred features at face value | Cross-check: dead code, prototypes, and abandoned features exist. Prioritize signals with tests and active usage |
