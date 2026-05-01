@@ -1,9 +1,9 @@
-2026.4.27 17:00:23 - v260427 - ATreep
-Initial project setup with debate and init-pm skills, plugin metadata, and CLAUDE.md.
-
 2026.5.01 - v260501 - ATreep
 - Move debate skill to assets/ as project-local template (copied to .claude/skills/ on init-pm)
 - Add source code analysis mode (Mode B) to init-pm
 - Add README with marketplace install instructions
 - Add MIT LICENSE
 - Remove CLAUDE.md
+
+2026.4.27 17:00:23 - v260427 - ATreep
+Initial project setup with debate and init-pm skills, plugin metadata, and CLAUDE.md.

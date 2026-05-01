@@ -4,14 +4,17 @@ An AI-driven Product Manager framework for Claude Code. Transform product materi
 
 ## What It Does
 
-`ai-pm-frame` gives Claude Code two skills:
+`ai-pm-frame` gives Claude Code three skills:
 
 | Skill | Purpose |
 |-------|---------|
 | `/init-pm` | Scaffolds a product-specific AI-PM workspace from docs, research materials, or existing source code |
 | `/debate` | Runs a live, turn-by-turn adversarial debate across 5+ generated stakeholder roles |
+| `/gen-prd` | Generates a comprehensive, production-grade PRD from product context, debate outcomes, and source code |
 
 The debate is not a summary generator. It is a real-time, sequential multi-agent process where each role defends its incentives, challenges opposing claims, and forces hard trade-off analysis — like a high-stakes product review meeting.
+
+The PRD generator synthesizes all available context — PM role, debate outputs, materials, and source code — into a structured document that engineering teams can directly implement from.
 
 ## Installation
 
@@ -62,9 +65,12 @@ your-project/
 ├── .claude/
 │   ├── settings.json           # Agent team config
 │   └── skills/
-│       └── debate/
-│           └── SKILL.md        # Debate skill (project-local)
-└── debate-materials/           # Drop debate inputs here
+│       ├── debate/
+│       │   └── SKILL.md        # Debate skill (project-local)
+│       └── gen-prd/
+│           └── SKILL.md        # PRD generation skill (project-local)
+├── debate-materials/           # Drop debate inputs here
+└── prd-outputs/                # Generated PRDs land here
 ```
 
 ### Step 2 — Add Debate Materials
@@ -84,6 +90,16 @@ Inside the AI-PM session:
 ```
 /debate Should we build a mobile app or a PWA for the next quarter?
 ```
+
+### Step 5 — Generate a PRD
+
+After running debates (or directly after init), generate a comprehensive PRD:
+
+```
+/gen-prd
+```
+
+The PRD reads from `pm-role.md`, debate outputs, materials, and source code to produce a structured document with requirements, user stories, data models, success metrics, and more.
 
 ## How the Debate Works
 
@@ -110,15 +126,17 @@ ai-pm-frame/
 │   ├── plugin.json             # Plugin metadata
 │   └── marketplace.json        # Marketplace listing
 ├── assets/
-│   └── debate/
-│       └── SKILL.md            # Debate skill template (copied to project on init)
+│   ├── debate/
+│   │   └── SKILL.md            # Debate skill template (copied to project on init)
+│   └── gen-prd/
+│       └── SKILL.md            # PRD generation skill template (copied to project on init)
 ├── skills/
 │   └── init-pm/
 │       └── SKILL.md            # Workspace initialization skill
 └── README.md
 ```
 
-The `debate` skill is installed as a **project-local** skill (`.claude/skills/debate/SKILL.md`), not at the user level (`~/.claude/`). This keeps it version-controllable and customizable per product.
+Skills in `assets/` are installed as **project-local** skills (`.claude/skills/<name>/SKILL.md`), not at the user level (`~/.claude/`). This keeps them version-controllable and customizable per product.
 
 ## Plugin Management
 

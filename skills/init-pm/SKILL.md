@@ -1,7 +1,7 @@
 # init-pm
 
 ## Overview
-Initialize an AI Product Manager (AI-PM) workspace for a specific product. This command creates the product manager role skill and all necessary workspace scaffolding so the user can run multi-agent product debates.
+Initialize an AI Product Manager (AI-PM) workspace for a specific product. This command creates the product manager role skill and all necessary workspace scaffolding so the user can run multi-agent product debates and generate PRDs.
 
 ## Prerequisites
 
@@ -143,27 +143,35 @@ chmod +x claude-pm.sh
 #### `debate-materials/` folder
 Create an empty directory named `debate-materials`.
 
-### 4. Install Debate Skill (Project-Local)
+#### `prd-outputs/` folder
+Create an empty directory named `prd-outputs`.
 
-The `debate` skill must be installed as a **project-local skill**, not at the user level (`~/.claude/`).
+### 4. Install Skills (Project-Local)
 
-1. Read the debate skill template from the plugin assets:
+Both the `debate` and `gen-prd` skills must be installed as **project-local skills**, not at the user level (`~/.claude/`).
+
+For each skill:
+
+1. Read the skill template from the plugin assets:
    ```
    assets/debate/SKILL.md
+   assets/gen-prd/SKILL.md
    ```
-   (This file is relative to the plugin root directory.)
+   (These files are relative to the plugin root directory.)
 
 2. Write the content to the project's local skills directory:
    ```
    .claude/skills/debate/SKILL.md
+   .claude/skills/gen-prd/SKILL.md
    ```
 
 3. Create the directory structure if it does not exist:
    ```bash
    mkdir -p .claude/skills/debate
+   mkdir -p .claude/skills/gen-prd
    ```
 
-**Do NOT** copy the debate skill to `~/.claude/skills/` or any other user-level location. It belongs exclusively in the project scope so it can be version-controlled and customized per product.
+**Do NOT** copy skills to `~/.claude/skills/` or any other user-level location. They belong exclusively in the project scope so they can be version-controlled and customized per product.
 
 ### 5. Teach the User
 
@@ -179,19 +187,31 @@ Start the AI Product Manager by running:
 ./claude-pm.sh
 ```
 
+**Available skills:**
+
+| Skill | Purpose |
+|-------|---------|
+| `/debate` | Run a multi-agent adversarial debate to surface trade-offs and validate decisions |
+| `/gen-prd` | Generate a comprehensive, production-grade PRD from product context |
+
 Before starting a debate:
 1. Copy any debate materials (research docs, competitor briefs, user interview notes, etc.) into the `debate-materials/` folder.
 2. Start a debate session with the `/debate` command.
 
-The `/debate` skill is installed as a project-local skill at `.claude/skills/debate/SKILL.md`. It will not appear in your global `~/.claude/` folder.
+Generate a PRD at any time with `/gen-prd`. It reads from `pm-role.md`, debate outputs, materials, and source code.
+
+Both skills are installed as project-local skills at `.claude/skills/`. They will not appear in your global `~/.claude/` folder.
 
 Example workflow:
 ```bash
 # 1. Start the AI-PM shell
 ./claude-pm.sh
 
-# 2. Inside the session, kick off a debate
-/debate ...a topic to debate...
+# 2. Run a debate to validate a product decision
+/debate Should we build a mobile app or a PWA?
+
+# 3. Generate a PRD from the accumulated context
+/gen-prd
 ```
 
 ---
@@ -210,5 +230,5 @@ Example workflow:
 | Ignoring source code when docs are thin | Use Mode B to fill gaps from the codebase — routes, schemas, and tests reveal real product intent |
 | Taking source-inferred features at face value | Cross-check: dead code, prototypes, and abandoned features exist. Prioritize signals with tests and active usage |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
-| Putting files in the wrong directory | All files (`pm-role.md`, `.claude/settings.json`, `claude-pm.sh`, `debate-materials/`) go in the workspace root |
-| Installing debate skill at user level | The debate skill goes to `.claude/skills/debate/SKILL.md` in the project root, **never** to `~/.claude/skills/` |
+| Putting files in the wrong directory | All files (`pm-role.md`, `.claude/settings.json`, `claude-pm.sh`, `debate-materials/`, `prd-outputs/`) go in the workspace root |
+| Installing skills at user level | Skills go to `.claude/skills/<name>/SKILL.md` in the project root, **never** to `~/.claude/skills/` |
