@@ -1,4 +1,4 @@
-2026.5.02 - v260502 - ATreep
+2026.5.02 - v260502-1 - ATreep
 - Simplify plugin install commands in README (drop owner prefix)
 - Add gen-prd skill for comprehensive PRD generation from product context
 - Update init-pm to install gen-prd alongside debate during workspace initialization
