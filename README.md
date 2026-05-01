@@ -27,7 +27,7 @@ The PRD generator synthesizes all available context — PM role, debate outputs,
 ### 2. Install the Plugin
 
 ```
-/plugin install ai-pm-frame@ATreep-ai-pm-frame
+/plugin install ai-pm-frame@ai-pm-frame
 ```
 
 ### 3. Verify
@@ -142,10 +142,10 @@ Skills in `assets/` are installed as **project-local** skills (`.claude/skills/<
 
 ```bash
 # Update to latest version
-/plugin marketplace update ATreep-ai-pm-frame
+/plugin marketplace update ai-pm-frame
 
 # Remove the marketplace
-/plugin marketplace remove ATreep-ai-pm-frame
+/plugin marketplace remove ai-pm-frame
 ```
 
 ## Requirements
