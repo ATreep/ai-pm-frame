@@ -1,3 +1,8 @@
+2026.5.02 - v260502 - ATreep
+- Add gen-prd skill for comprehensive PRD generation from product context
+- Update init-pm to install gen-prd alongside debate during workspace initialization
+- Add prd-outputs/ directory to workspace scaffolding
+
 2026.5.01 - v260501 - ATreep
 - Move debate skill to assets/ as project-local template (copied to .claude/skills/ on init-pm)
 - Add source code analysis mode (Mode B) to init-pm
