@@ -1,3 +1,9 @@
+2026.5.02 - v260502-2 - ATreep
+- Enhance init-pm to generate PM with deep architecture and system knowledge
+- Add project management framework to PM role (scope, prioritization, risk, stakeholder management)
+- Restructure PM role requirements into Product Foundation, Architecture, PM Framework, and Decision-Making sections
+- Update gen-prd to simplify source priority (remove debate-outputs/materials dependency)
+
 2026.5.02 - v260502-1 - ATreep
 - Simplify plugin install commands in README (drop owner prefix)
 - Add gen-prd skill for comprehensive PRD generation from product context

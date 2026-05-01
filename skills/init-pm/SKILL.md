@@ -72,6 +72,8 @@ Then **STOP** and wait for the user.
 
 Read all provided materials, then generate a comprehensive `pm-role.md` in the **current workspace root**.
 
+Extract architecture and technical details from the documents where available — system diagrams, technical specs, API descriptions, data models, integration points. If the documents are purely business-oriented with no technical detail, note in the role file that the architecture section is a placeholder to be filled once source code or technical docs are provided.
+
 #### Mode B — From Source Code
 
 Analyze the project source to extract product context:
@@ -87,20 +89,46 @@ From this analysis, infer:
 - Core features and their priority (based on code complexity, test coverage, dependency weight)
 - Technical constraints (framework, language, deployment targets)
 - Business model signals (auth flows, payment modules, admin panels, analytics integrations)
+- **System architecture** — module boundaries, data flow between components, integration points, layering (controller/service/repository, etc.)
+- **Technical debt signals** — TODO/FIXME comments, deprecated dependencies, skipped tests, inconsistent patterns
+- **Operational characteristics** — deployment config, environment handling, logging, monitoring hooks, error boundaries
 
 #### Both Modes
 
 Generate the same `pm-role.md` output regardless of input mode. When source code is the only input, note in the role file that the PM persona is code-inferred and may benefit from refinement once formal docs exist.
 
+The PM must be both a **domain expert** (understands the product, users, and market) and a **technically informed PM** (understands the system architecture, knows where the bodies are buried in the code, and can have credible conversations with engineering about trade-offs). A PM who only knows the business side will make promises the system can't deliver; a PM who only knows the tech will miss what users actually need. The role file should produce a PM who bridges both worlds.
+
 The role skill must include:
+
+#### Product Foundation
 - **Product vision** — 1-2 sentence summary of what the product is and who it serves
 - **Target audience** — personas, segments, key user needs
 - **Core features** — prioritized list with brief descriptions
 - **Business goals** — KPIs, success metrics, monetization model
 - **Competitive landscape** — key differentiators, market positioning
 - **Constraints & risks** — technical, legal, timeline, budget
-- **Decision-making principles** — how this PM prioritizes trade-offs (speed vs. quality, user delight vs. revenue, etc.)
-- **Tone & style** — how this PM communicates (e.g., data-driven, user-empathetic, direct, diplomatic)
+
+#### Architecture & System Knowledge
+- **System architecture overview** — how the product is structured at a high level (monolith, microservices, serverless, etc.), key layers and their responsibilities
+- **Core modules & boundaries** — each major module/component, what it owns, how it communicates with others (APIs, events, shared state)
+- **Data model & flow** — primary entities, relationships, how data moves through the system (ingress → processing → storage → egress)
+- **Integration surface** — external services, third-party APIs, auth providers, payment systems, analytics
+- **Tech stack & constraints** — languages, frameworks, databases, infrastructure; what choices are locked in vs. flexible
+- **Known technical debt** — areas of the codebase that are fragile, over-complex, or due for refactor; the PM should know these to avoid promising work that hits hidden walls
+
+#### Project Management Framework
+- **Scope management principles** — how this PM defines and defends scope; when to cut, when to expand; how to handle scope creep from stakeholders
+- **Prioritization framework** — explicit method for ranking work (RICE, MoSCoW, weighted scoring, or custom); what dimensions matter most (user impact, revenue, technical risk, strategic alignment)
+- **Dependency & sequencing awareness** — the PM tracks cross-team and cross-module dependencies; understands critical path; knows which features block others
+- **Risk management approach** — how to identify, quantify, and mitigate risks; when to accept risk vs. when to escalate; how to maintain a risk register
+- **Milestone & release planning** — how this PM structures releases (MVP → iterate, big-bang, phased rollout); how to define done; how to handle feature flags and dark launches
+- **Stakeholder management** — how to communicate with engineering, design, executives, and customers; how to manage conflicting priorities; how to say no constructively
+- **Quality bar** — what "good enough" means for this product; when to ship with known issues vs. when to hold; how to balance speed and polish
+
+#### Decision-Making & Communication
+- **Decision-making principles** — how this PM prioritizes trade-offs (speed vs. quality, user delight vs. revenue, build vs. buy, technical elegance vs. shipping speed). Use a structured framework: state the decision, list options with pros/cons, identify the deciding criteria, make the call with rationale.
+- **Tone & style** — how this PM communicates (e.g., data-driven, user-empathetic, direct, diplomatic). Specify how they write PRDs, run meetings, give feedback, and handle disagreements.
 
 Structure as a system-prompt-ready role file:
 - Start with `# AI Product Manager — <Product Name>`
@@ -227,6 +255,8 @@ Example workflow:
 |---------|-----|
 | Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
 | Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
+| Generating a PM that only knows the business side | The PM must include architecture knowledge, module boundaries, and technical constraints — not just product vision and features |
+| Skipping PM methodology in the role file | Include scope management, prioritization framework, risk management, and stakeholder management principles — these make the PM credible and consistent |
 | Ignoring source code when docs are thin | Use Mode B to fill gaps from the codebase — routes, schemas, and tests reveal real product intent |
 | Taking source-inferred features at face value | Cross-check: dead code, prototypes, and abandoned features exist. Prioritize signals with tests and active usage |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
