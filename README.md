@@ -10,7 +10,7 @@ An AI-driven Product Manager framework for Claude Code. Transform product materi
 |-------|---------|
 | `/init-pm` | Scaffolds a product-specific AI-PM workspace from docs, research materials, or existing source code |
 | `/debate` | Runs a live, turn-by-turn adversarial debate across 5+ generated stakeholder roles |
-| `/gen-prd` | Generates a comprehensive, production-grade PRD from product context, debate outcomes, and source code |
+| `/gen-prd` | Generates a comprehensive, production-grade PRD from product context and source code |
 
 The debate is not a summary generator. It is a real-time, sequential multi-agent process where each role defends its incentives, challenges opposing claims, and forces hard trade-off analysis — like a high-stakes product review meeting.
 
@@ -50,9 +50,18 @@ Open Claude Code in your project directory, then run:
 
 `/init-pm` supports two input modes:
 
-**Mode A — From documents:** provide PRD, ads, docs, user stories, or competitive analysis.
+**Mode A — From documents:** Provide PRD, ads, docs, user stories, or competitive analysis. No extra plugins needed.
 
-**Mode B — From source code:** run `/init-pm` inside an existing codebase. Claude scans your README, manifests, directory structure, routes, schemas, and tests to infer the product context and generate the PM role automatically.
+**Mode B — From source code:** Run `/init-pm` inside an existing codebase. Claude scans your source code, generates detailed spec documents (via the [One Workflow](https://github.com/ATreep/one-workflow) plugin), and creates a concise PM role.
+
+> **Mode B requires the One Workflow plugin.** Install it before running `/init-pm` on a source codebase:
+>
+> ```
+> /plugin marketplace add ATreep/one-workflow
+> /plugin install one-workflow@one-workflow
+> ```
+>
+> If you only provide documents (Mode A), no extra plugins are needed.
 
 Both modes can be combined — documents are the primary source, source code fills gaps and validates claims.
 
@@ -60,7 +69,7 @@ This creates:
 
 ```
 your-project/
-├── pm-role.md                  # AI PM persona derived from your materials
+├── pm-role.md                  # Concise AI PM persona derived from your materials
 ├── claude-pm.sh                # Launch script
 ├── .claude/
 │   ├── settings.json           # Agent team config
@@ -70,7 +79,12 @@ your-project/
 │       └── gen-prd/
 │           └── SKILL.md        # PRD generation skill (project-local)
 ├── debate-materials/           # Drop debate inputs here
-└── prd-outputs/                # Generated PRDs land here
+├── prd-outputs/                # Generated PRDs land here
+└── spec/                       # (Mode B only) Detailed project spec from source analysis
+    ├── README.md               # Spec navigation index
+    ├── architecture.md         # System structure and flow
+    ├── modules.md              # Module catalog
+    └── ...                     # Runtime, data model, integrations, operations
 ```
 
 ### Step 2 — Add Debate Materials
@@ -99,7 +113,7 @@ After running debates (or directly after init), generate a comprehensive PRD:
 /gen-prd
 ```
 
-The PRD reads from `pm-role.md`, debate outputs, materials, and source code to produce a structured document with requirements, user stories, data models, success metrics, and more.
+The PRD reads from `pm-role.md`, `spec/` (if present), debate outputs, materials, and source code to produce a structured document with requirements, user stories, data models, success metrics, and more.
 
 ## How the Debate Works
 
@@ -152,6 +166,7 @@ Skills in `assets/` are installed as **project-local** skills (`.claude/skills/<
 
 - Claude Code with agent team support (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`)
 - Product context from one of: documents (PRD, ads, docs) or an existing codebase (README, manifests, source tree)
+- **[One Workflow](https://github.com/ATreep/one-workflow) plugin** — only required for Mode B (source-based init). Not needed if you only provide documents.
 
 ## License
 

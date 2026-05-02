@@ -1,7 +1,8 @@
 # init-pm
 
 ## Overview
-Initialize an AI Product Manager (AI-PM) workspace for a specific product. This command creates the product manager role skill and all necessary workspace scaffolding so the user can run multi-agent product debates and generate PRDs.
+
+Initialize an AI Product Manager (AI-PM) workspace for a specific product. Creates a concise PM role skill and all necessary workspace scaffolding for multi-agent product debates and PRD generation.
 
 ## Prerequisites
 
@@ -20,7 +21,9 @@ The user provides external materials directly. At least one of:
 
 ### Mode B — Source Code Analysis
 
-The user points to an existing codebase (or runs `/init-pm` inside one). Claude reads the project source to infer product context. Useful when no formal docs exist yet.
+The user points to an existing codebase (or runs `/init-pm` inside one). Claude reads the project source to infer product context.
+
+**Requires the One Workflow plugin** (`/plugin install one-workflow@one-workflow`). If not installed, prompt the user to install it first.
 
 Required signals (at least one must be present):
 - `README.md` or equivalent project documentation
@@ -40,7 +43,16 @@ Determine which input mode applies:
 
 **If the user provided documents** — proceed with Mode A.
 
-**If no documents were provided but a source tree exists** — proceed with Mode B. Scan the workspace for:
+**If no documents were provided but a source tree exists** — proceed with Mode B. First check that the One Workflow plugin is installed. If not, tell the user:
+
+```
+Source-based initialization requires the One Workflow plugin. Install it first:
+
+/plugin marketplace add ATreep/one-workflow
+/plugin install one-workflow@one-workflow
+```
+
+Then scan the workspace for:
 1. `README.md` or similar documentation files
 2. Manifest files (`package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, etc.)
 3. Source directory structure (`src/`, `app/`, `lib/`)
@@ -66,43 +78,40 @@ Or point me to an existing codebase with:
 
 Then **STOP** and wait for the user.
 
-### 2. Create Product Manager Role Skill
+### 2. Generate Spec from Source (Mode B Only)
 
-#### Mode A — From Documents
+When source code is the input, generate detailed project documentation using the One Workflow plugin:
 
-Read all provided materials, then generate a comprehensive `pm-role.md` in the **current workspace root**.
+1. Invoke the `one-workflow:new-docs` skill to analyze the codebase and generate comprehensive spec documents.
+2. Redirect all output to the `spec/` folder (not the default `docs/`). After the skill runs, move or rename `docs/` to `spec/` if the skill wrote to `docs/`.
+3. The spec should cover: architecture, modules, runtime, data model, integrations, operations, and implementation guide — one focused file per topic.
 
-Extract architecture and technical details from the documents where available — system diagrams, technical specs, API descriptions, data models, integration points. If the documents are purely business-oriented with no technical detail, note in the role file that the architecture section is a placeholder to be filled once source code or technical docs are provided.
+Expected spec structure:
+```
+spec/
+├── README.md               # Navigation index
+├── architecture.md          # System structure, boundaries, flow
+├── modules.md               # Module catalog with purpose and ownership
+├── runtime.md               # Setup, scripts, execution model, env/config
+├── data-model.md            # Storage schemas, entities, relationships
+├── integrations.md          # Third-party APIs/services and contracts
+├── operations.md            # Deploy, health checks, failure paths
+├── implementation-guide.md  # End-to-end rebuild blueprint
+└── modules/                 # One file per significant module
+    └── <module-name>.md
+```
 
-#### Mode B — From Source Code
+**For Mode A (documents only):** Skip this step. No spec generation is needed when the user provides documents directly.
 
-Analyze the project source to extract product context:
+### 3. Create Product Manager Role Skill
 
-1. **Read documentation files** — `README.md`, `CHANGELOG.md`, `docs/`, `CONTRIBUTING.md`
-2. **Read manifest files** — extract name, description, dependencies, scripts
-3. **Scan directory structure** — infer features from folder names, module organization, route files
-4. **Read key source files** — look for API routes, schema definitions, feature modules, i18n keys, config constants
-5. **Inspect test files** — test names and structure reveal intended user flows and feature boundaries
+Read all provided materials (and spec if generated), then generate a **concise** `pm-role.md` in the current workspace root.
 
-From this analysis, infer:
-- What the product does and who it serves
-- Core features and their priority (based on code complexity, test coverage, dependency weight)
-- Technical constraints (framework, language, deployment targets)
-- Business model signals (auth flows, payment modules, admin panels, analytics integrations)
-- **System architecture** — module boundaries, data flow between components, integration points, layering (controller/service/repository, etc.)
-- **Module dependency graph** — which modules import/depend on which, what would break if a module changes
-- **Infrastructure details** — Dockerfiles, docker-compose, Kubernetes manifests, Terraform/Pulumi configs, CI/CD pipelines (.github/workflows, Jenkinsfile, etc.), environment variable patterns
-- **Data architecture** — database schemas, migration files, ORM models, cache configurations, message queue definitions
-- **Technical debt signals** — TODO/FIXME comments, deprecated dependencies, skipped tests, inconsistent patterns
-- **Operational characteristics** — deployment config, environment handling, logging, monitoring hooks, error boundaries, health check endpoints
+The PM role should be **short and focused** — around 100-200 lines. A long role file is a burden on the LLM context window and dilutes the PM's effectiveness. The role captures product knowledge at a high level; deep technical details belong in the spec.
 
-#### Both Modes
+If spec documents were generated in step 2, include this note at the top of the PM role (after frontmatter):
 
-Generate the same `pm-role.md` output regardless of input mode. When source code is the only input, note in the role file that the PM persona is code-inferred and may benefit from refinement once formal docs exist.
-
-The PM must be both a **domain expert** (understands the product, users, and market) and a **technically informed PM** (understands the system architecture, knows where the bodies are buried in the code, and can have credible conversations with engineering about trade-offs). A PM who only knows the business side will make promises the system can't deliver; a PM who only knows the tech will miss what users actually needs. The role file should produce a PM who bridges both worlds.
-
-**Infrastructure-First Architecture Knowledge**: The PM role must include deep infrastructure understanding — not just "what the product does" but "how the system is built." The PM should be able to describe the complete module architecture: every major module, its responsibility, how modules communicate, data flow paths, and infrastructure dependencies. This is critical for making realistic promises, estimating effort, and identifying risks. A PM who doesn't understand the infrastructure will greenlight features that require rewriting core modules or miss that a "simple" change touches 5 services.
+> **Project Spec Available:** Detailed architecture, module, and technical documentation is available in the `spec/` folder. Reference `spec/README.md` for navigation. Use spec documents when you need deep technical context for decisions.
 
 The role skill must include:
 
@@ -110,70 +119,31 @@ The role skill must include:
 - **Product vision** — 1-2 sentence summary of what the product is and who it serves
 - **Target audience** — personas, segments, key user needs
 - **Core features** — prioritized list with brief descriptions
-- **Business goals** — KPIs, success metrics, monetization model
 - **Competitive landscape** — key differentiators, market positioning
-- **Constraints & risks** — technical, legal, timeline, budget
+- **Product highlights** — what the product does well, unique strengths
+- **Known shortcomings** — gaps, limitations, areas for improvement
 
-#### Architecture & System Knowledge (Infrastructure-First)
+#### Architecture Summary (High-Level Only)
+- **System overview** — monolith/microservices/serverless, main tech stack
+- **Key modules** — list of major modules with one-line descriptions (no deep dive)
+- **Integration points** — external services and APIs the product depends on
+- **Technical constraints** — framework, language, deployment targets, performance budgets
 
-**System Architecture Overview**
-- How the product is structured (monolith, microservices, serverless, modular monolith, etc.)
-- Key layers and their responsibilities (presentation, API, business logic, data access, infrastructure)
-- Deployment topology — where things run, how they're scaled, what manages them
-- Infrastructure providers and services (cloud platform, CDN, container orchestration, serverless functions)
+> **Note:** If the product was initialized from source code, detailed architecture documentation is in the `spec/` folder. The PM role provides the high-level picture; use spec for module-level detail.
 
-**Module Architecture Map** (the PM must know every major module)
-- Each major module/component, its name, purpose, and ownership boundary
-- Module communication patterns — REST APIs, gRPC, message queues, event buses, shared databases, direct imports
-- Module dependency graph — which modules depend on which, what breaks if a module changes
-- Module maturity signals — which modules are stable vs. actively developed vs. legacy
+#### PM Decision Framework
+- **Prioritization approach** — how this PM ranks work (impact vs. effort, user value, strategic alignment)
+- **Quality bar** — what "good enough" means for this product
+- **Communication style** — how this PM writes PRDs, gives feedback, handles disagreements
 
-**Data Architecture**
-- Primary entities and their relationships (the PM should sketch the ERD from memory)
-- Data flow paths — ingress → validation → processing → storage → egress
-- Database technologies used and why (relational vs. document vs. time-series vs. cache)
-- Data ownership — which module owns which tables/collections, cross-module data access patterns
-- Caching strategy — what's cached, where, invalidation approach
-
-**Infrastructure & DevOps**
-- CI/CD pipeline — how code gets from commit to production
-- Environment topology — dev, staging, production; how they differ
-- Monitoring & observability — logging, metrics, tracing, alerting stack
-- Scaling strategy — horizontal vs. vertical, auto-scaling triggers, load balancing
-- Disaster recovery — backup strategy, failover, RTO/RPO targets
-
-**Integration Surface**
-- External services, third-party APIs, auth providers, payment systems, analytics
-- Integration reliability — which integrations are critical path, which have fallbacks
-- API contracts — internal vs. external APIs, versioning strategy, breaking change policy
-
-**Tech Stack & Constraints**
-- Languages, frameworks, databases, infrastructure; what choices are locked in vs. flexible
-- Performance budgets and constraints (latency targets, throughput requirements, resource limits)
-- Compliance constraints (data residency, privacy regulations, security certifications)
-
-**Known Technical Debt**
-- Areas of the codebase that are fragile, over-complex, or due for refactor
-- The PM should know these to avoid promising work that hits hidden walls
-- Debt impact assessment — which debt blocks new features vs. which is just annoying
-
-#### Project Management Framework
-- **Scope management principles** — how this PM defines and defends scope; when to cut, when to expand; how to handle scope creep from stakeholders
-- **Prioritization framework** — explicit method for ranking work (RICE, MoSCoW, weighted scoring, or custom); what dimensions matter most (user impact, revenue, technical risk, strategic alignment)
-- **Dependency & sequencing awareness** — the PM tracks cross-team and cross-module dependencies; understands critical path; knows which features block others
-- **Risk management approach** — how to identify, quantify, and mitigate risks; when to accept risk vs. when to escalate; how to maintain a risk register
-- **Milestone & release planning** — how this PM structures releases (MVP → iterate, big-bang, phased rollout); how to define done; how to handle feature flags and dark launches
-- **Stakeholder management** — how to communicate with engineering, design, executives, and customers; how to manage conflicting priorities; how to say no constructively
-- **Quality bar** — what "good enough" means for this product; when to ship with known issues vs. when to hold; how to balance speed and polish
-
-#### Decision-Making & Communication
-- **Decision-making principles** — how this PM prioritizes trade-offs (speed vs. quality, user delight vs. revenue, build vs. buy, technical elegance vs. shipping speed). Use a structured framework: state the decision, list options with pros/cons, identify the deciding criteria, make the call with rationale.
-- **Tone & style** — how this PM communicates (e.g., data-driven, user-empathetic, direct, diplomatic). Specify how they write PRDs, run meetings, give feedback, and handle disagreements.
+#### Constraints & Risks
+- Technical, legal, timeline, or budget constraints
+- Key risks and known trade-offs
 
 Structure as a system-prompt-ready role file:
 - Start with `# AI Product Manager — <Product Name>`
 - Use imperative, persona-driven language ("You are a PM who...")
-- **Minimum 400 lines, target 500-700 lines** — the PM role must be comprehensive enough to describe the full module architecture, not just a product summary
+- **Target 100-200 lines** — concise enough to fit comfortably in context, detailed enough to guide decisions
 - Use frontmatter:
   ```yaml
   ---
@@ -182,7 +152,7 @@ Structure as a system-prompt-ready role file:
   ---
   ```
 
-### 3. Create Workspace Files
+### 4. Create Workspace Files
 
 Create the following in the **current workspace root**:
 
@@ -214,7 +184,7 @@ Create an empty directory named `debate-materials`.
 #### `prd-outputs/` folder
 Create an empty directory named `prd-outputs`.
 
-### 4. Install Skills (Project-Local)
+### 5. Install Skills (Project-Local)
 
 Both the `debate` and `gen-prd` skills must be installed as **project-local skills**, not at the user level (`~/.claude/`).
 
@@ -241,7 +211,11 @@ For each skill:
 
 **Do NOT** copy skills to `~/.claude/skills/` or any other user-level location. They belong exclusively in the project scope so they can be version-controlled and customized per product.
 
-### 5. Teach the User
+**Spec reference note:** If spec documents were generated in step 2, add the following note to the beginning of the installed `gen-prd/SKILL.md` (after the first heading):
+
+> **Project Spec Available:** Detailed architecture, module, and technical documentation is available in the `spec/` folder. Reference `spec/README.md` for navigation. When generating the PRD, consult spec documents for accurate module descriptions, data models, and integration details.
+
+### 6. Teach the User
 
 After setup is complete, output exactly:
 
@@ -270,6 +244,9 @@ Generate a PRD at any time with `/gen-prd`. It reads from `pm-role.md`, debate o
 
 Both skills are installed as project-local skills at `.claude/skills/`. They will not appear in your global `~/.claude/` folder.
 
+[If spec was generated, add:]
+> **Spec documents** are available in the `spec/` folder. These contain detailed architecture, module, and technical documentation generated from your source code. Reference them when you need deep context for product decisions.
+
 Example workflow:
 ```bash
 # 1. Start the AI-PM shell
@@ -295,12 +272,9 @@ Example workflow:
 |---------|-----|
 | Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
 | Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
-| Generating a PM that only knows the business side | The PM must include architecture knowledge, module boundaries, and technical constraints — not just product vision and features |
-| Writing a PM role that's too short | The PM role must be 400+ lines with detailed module architecture, infrastructure knowledge, and PM methodology — a 200-line PM will lack the depth to make real decisions |
-| Missing infrastructure details | Include deployment topology, CI/CD pipeline, monitoring stack, scaling strategy, and environment details — the PM needs to understand how the system actually runs |
-| Skipping PM methodology in the role file | Include scope management, prioritization framework, risk management, and stakeholder management principles — these make the PM credible and consistent |
-| Ignoring source code when docs are thin | Use Mode B to fill gaps from the codebase — routes, schemas, and tests reveal real product intent |
-| Taking source-inferred features at face value | Cross-check: dead code, prototypes, and abandoned features exist. Prioritize signals with tests and active usage |
+| Writing a PM role that's too long | Keep to 100-200 lines; deep technical details go in spec/, not the role file |
+| Skipping spec generation for source-based init | Use `one-workflow:new-docs` to generate spec documents when source code is provided |
+| Forgetting to check One Workflow plugin | Verify the plugin is installed before attempting source-based initialization |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
 | Putting files in the wrong directory | All files (`pm-role.md`, `.claude/settings.json`, `claude-pm.sh`, `debate-materials/`, `prd-outputs/`) go in the workspace root |
 | Installing skills at user level | Skills go to `.claude/skills/<name>/SKILL.md` in the project root, **never** to `~/.claude/skills/` |
