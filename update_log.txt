@@ -1,3 +1,10 @@
+2026.5.02 15:00:00 - v260502-4 - treep
+- Rewrite init-pm for concise PM role (100-200 lines) with spec generation via one-workflow:new-docs
+- Add spec/ folder output for source-based initialization
+- Update gen-prd with frontmatter, How It Works section, and spec reference in input sources
+- Update README with One Workflow plugin dependency note for Mode B
+- Remove CLAUDE_CODE_MAX_OUTPUT_TOKENS from default settings template
+
 2026.5.02 - v260502-2 - ATreep
 - Enhance init-pm to generate PM with deep architecture and system knowledge
 - Add project management framework to PM role (scope, prioritization, risk, stakeholder management)
