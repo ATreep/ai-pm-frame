@@ -83,7 +83,7 @@ Then **STOP** and wait for the user.
 When source code is the input, generate detailed project documentation using the One Workflow plugin:
 
 1. Invoke the `one-workflow:new-docs` skill to analyze the codebase and generate comprehensive spec documents.
-2. Redirect all output to the `spec/` folder (not the default `docs/`). After the skill runs, move or rename `docs/` to `spec/` if the skill wrote to `docs/`.
+2. Redirect all output to the `spec/` folder in the current workspace. 
 3. The spec should cover: architecture, modules, runtime, data model, integrations, operations, and implementation guide — one focused file per topic.
 
 Expected spec structure:

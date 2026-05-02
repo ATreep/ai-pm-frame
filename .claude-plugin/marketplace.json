@@ -9,7 +9,7 @@
       "name": "ai-pm-frame",
       "source": "./",
       "description": "An AI-driven Product Manager for Claude Code that transforms news, feedback, and research into actionable PRDs and guidelines through multi-agent stakeholder debates.",
-      "version": "v260502-4",
+      "version": "v260502-5",
       "author": {
         "name": "ATreep"
       }
