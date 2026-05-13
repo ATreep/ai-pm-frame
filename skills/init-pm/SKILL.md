@@ -82,7 +82,7 @@ Then **STOP** and wait for the user.
 
 When source code is the input, generate detailed project documentation using the One Workflow plugin:
 
-1. Invoke the `one-workflow:new-docs` skill to analyze the codebase and generate comprehensive spec documents.
+1. Invoke the `one-workflow:specify` skill to analyze the codebase and generate comprehensive spec documents.
 2. Redirect all output to the `spec/` folder in the current workspace. 
 3. The spec should cover: architecture, modules, runtime, data model, integrations, operations, and implementation guide — one focused file per topic.
 
@@ -169,10 +169,13 @@ Create the following in the **current workspace root**:
 #### `claude-pm.sh`
 ```sh
 #!/bin/zsh
-claude --dangerously-skip-permissions --system-prompt "$(cat ./pm-role.md)"
+claude --dangerously-skip-permissions --name "<ai-pm-name>" --system-prompt "$(cat ./pm-role.md)"
 ```
 
+You should fill the `<ai-pm-name>` above, such as `my-webapp-pm` or `manage-sys-pm`.
+
 After writing, make it executable:
+
 ```bash
 chmod +x claude-pm.sh
 ```
@@ -272,7 +275,7 @@ Example workflow:
 | Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
 | Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
 | Writing a PM role that's too long | Keep to 100-200 lines; deep technical details go in spec/, not the role file |
-| Skipping spec generation for source-based init | Use `one-workflow:new-docs` to generate spec documents when source code is provided |
+| Skipping spec generation for source-based init | Use `one-workflow:specify to generate spec documents when source code is provided |
 | Forgetting to check One Workflow plugin | Verify the plugin is installed before attempting source-based initialization |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
 | Putting files in the wrong directory | All files (`pm-role.md`, `.claude/settings.json`, `claude-pm.sh`, `debate-materials/`, `prd-outputs/`) go in the workspace root |
