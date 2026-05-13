@@ -107,7 +107,10 @@ spec/
 
 Read all provided materials (and spec if generated), then generate a **concise** `pm-role.md` in the current workspace root.
 
-The PM role should be **short and focused** — around 100-200 lines. A long role file is a burden on the LLM context window and dilutes the PM's effectiveness. The role captures product knowledge at a high level; deep technical details belong in the spec.
+The target length depends on the input mode:
+
+- **Mode A (documents):** Be as detailed as the source material allows. 200-800 lines is acceptable — the PM role should faithfully capture all product context from the provided documents. Thoroughness matters more than brevity when the user supplies rich materials.
+- **Mode B (source code):** Keep it **short and focused** — around 100-200 lines. Deep technical details belong in the spec/ folder, not the role file.
 
 If spec documents were generated in step 2, include this note at the top of the PM role (after frontmatter):
 
@@ -143,7 +146,7 @@ The role skill must include:
 Structure as a system-prompt-ready role file:
 - Start with `# AI Product Manager — <Product Name>`
 - Use imperative, persona-driven language ("You are a PM who...")
-- **Target 100-200 lines** — concise enough to fit comfortably in context, detailed enough to guide decisions
+- **Target length:** Mode A — 200-800 lines (detail-rich); Mode B — 100-200 lines (concise, spec has the details)
 - Use frontmatter:
   ```yaml
   ---
@@ -274,7 +277,7 @@ Example workflow:
 |---------|-----|
 | Proceeding without product materials or source code | Stop and ask the user for docs or point them to a codebase |
 | Writing a generic PM role | Derive specifics from the provided materials or source code; every section should reference the actual product |
-| Writing a PM role that's too long | Keep to 100-200 lines; deep technical details go in spec/, not the role file |
+| Writing a PM role that's too long | Mode A: up to 800 lines is fine; Mode B: keep to 100-200 lines, details go in spec/ |
 | Skipping spec generation for source-based init | Use `one-workflow:specify to generate spec documents when source code is provided |
 | Forgetting to check One Workflow plugin | Verify the plugin is installed before attempting source-based initialization |
 | Forgetting to make `claude-pm.sh` executable | Run `chmod +x claude-pm.sh` after writing |
